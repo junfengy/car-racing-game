@@ -16,15 +16,21 @@ This guide will help you set up Supabase to enable a shared leaderboard across a
 3. Name the table: `leaderboard`
 4. Add the following columns:
 
-| Column Name | Type | Default Value | Primary Key |
-|-------------|------|---------------|-------------|
-| id | int8 | `gen_random_uuid()` | ✅ Yes |
-| player_name | text | null | ❌ No |
-| email | text | null | ❌ No |
-| score | int8 | null | ❌ No |
-| created_at | timestamptz | `now()` | ❌ No |
+| Column Name | Type | Default Value | Primary Key | Unique |
+|-------------|------|---------------|-------------|---------|
+| id | int8 | `gen_random_uuid()` | ✅ Yes | ❌ No |
+| player_name | text | null | ❌ No | ❌ No |
+| email | text | null | ❌ No | ✅ Yes |
+| score | int8 | null | ❌ No | ❌ No |
+| created_at | timestamptz | `now()` | ❌ No | ❌ No |
 
-5. Click "Save" to create the table
+5. **Important**: Make sure to check the "Unique" checkbox for the `email` column
+6. Click "Save" to create the table
+
+**Note**: The `email` column must be unique so that each player can only have one score entry. When a player submits a new score:
+- If it's higher than their previous score, it will replace the old score
+- If it's lower than their previous score, it will be ignored
+- This keeps the leaderboard clean with only the best score per player
 
 ## Step 3: Get Your Supabase Credentials
 

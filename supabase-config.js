@@ -4,7 +4,6 @@ import { createClient } from 'https://cdn.skypack.dev/@supabase/supabase-js'
 // Replace these with your actual Supabase URL and anon key
 const SUPABASE_URL = 'https://raqpxhwbcttithpleaxr.supabase.co'
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhcXB4aHdiY3R0aXRocGxlYXhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEwNzE5NjksImV4cCI6MjA2NjY0Nzk2OX0.rsYWtDXe8KjN1rxwexjRzTXbsuQHJ1HRzJP8BaP9GbQ'
-
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
 
 // Rate limiting and security utilities
@@ -85,16 +84,20 @@ export const leaderboardAPI = {
             const sanitizedName = playerName.trim().substring(0, 50);
             const sanitizedEmail = email.trim().toLowerCase();
             
+            // Use upsert to only keep the highest score for each email
             const { data, error } = await supabase
                 .from('leaderboard')
-                .insert([
+                .upsert([
                     {
                         player_name: sanitizedName,
                         email: sanitizedEmail,
-                        score: Math.floor(score), // Ensure integer
+                        score: Math.floor(score),
                         created_at: new Date().toISOString()
                     }
-                ])
+                ], {
+                    onConflict: 'email', // Conflict on email column
+                    ignoreDuplicates: false // Update if exists
+                })
                 .select()
             
             if (error) {

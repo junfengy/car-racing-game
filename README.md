@@ -64,6 +64,7 @@ A fun browser-based car racing game where you control a car in the middle lane a
 
 - **Global leaderboard**: Scores shared across all players worldwide
 - **Real-time updates**: Leaderboard updates immediately when new scores are added
+- **One score per player**: Only the highest score for each email address is kept
 - **Email privacy**: Email addresses are partially masked in the display
 - **Top 10 scores**: Only the best scores are shown
 - **Player names**: Uses email prefix as player name
