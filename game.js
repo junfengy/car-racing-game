@@ -15,6 +15,7 @@ let gameStartTime = Date.now();
 let lastTimeBonus = 0;
 let playerEmail = localStorage.getItem('playerEmail') || '';
 let emailSubmitted = false;
+let leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
 
 // Car dimensions
 const carWidth = 40;
@@ -285,6 +286,9 @@ function checkCollisions() {
 function gameOver() {
     gameRunning = false;
     
+    // Add score to leaderboard
+    addToLeaderboard(score, playerEmail);
+    
     // Check for new high score
     const isNewHighScore = score > highScore;
     if (isNewHighScore) {
@@ -454,4 +458,53 @@ if (!playerEmail) {
 } else {
     emailSubmitted = true;
     startGame();
+}
+
+// Leaderboard functions
+function showLeaderboard() {
+    updateLeaderboardDisplay();
+    document.getElementById('leaderboardModal').style.display = 'block';
+}
+
+function hideLeaderboard() {
+    document.getElementById('leaderboardModal').style.display = 'none';
+}
+
+function updateLeaderboardDisplay() {
+    const leaderboardList = document.getElementById('leaderboardList');
+    
+    if (leaderboard.length === 0) {
+        leaderboardList.innerHTML = '<p>No scores yet. Be the first to set a record!</p>';
+        return;
+    }
+    
+    let html = '<div class="leaderboard-entries">';
+    leaderboard.forEach((entry, index) => {
+        const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '🏅';
+        const email = entry.email ? entry.email.split('@')[0] + '@***' : 'Anonymous';
+        html += `
+            <div class="leaderboard-entry">
+                <span class="rank">${medal} #${index + 1}</span>
+                <span class="player">${email}</span>
+                <span class="score">${entry.score} pts</span>
+                <span class="date">${new Date(entry.date).toLocaleDateString()}</span>
+            </div>
+        `;
+    });
+    html += '</div>';
+    leaderboardList.innerHTML = html;
+}
+
+function addToLeaderboard(score, email) {
+    const entry = {
+        score: score,
+        email: email,
+        date: Date.now()
+    };
+    
+    leaderboard.push(entry);
+    leaderboard.sort((a, b) => b.score - a.score); // Sort by score descending
+    leaderboard = leaderboard.slice(0, 10); // Keep only top 10
+    
+    localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
 } 
