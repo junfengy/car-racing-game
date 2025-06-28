@@ -219,26 +219,39 @@ function updateAICars() {
             // Find available lanes (lanes without cars)
             const availableLanes = [0, 1, 2].filter(lane => !lanesWithCars.has(lane));
             
-            // Randomly choose from available lanes
-            const lane = availableLanes[Math.floor(Math.random() * availableLanes.length)];
-            let x;
+            // Check minimum distance from existing cars
+            const minDistance = 80; // Minimum vertical distance between cars
+            let canSpawn = true;
             
-            if (lane === 0) {
-                x = laneWidth - carWidth / 2; // Left yellow line
-            } else if (lane === 1) {
-                x = canvas.width / 2 - carWidth / 2; // Center yellow line
-            } else {
-                x = canvas.width - laneWidth - carWidth / 2; // Right yellow line
+            for (const car of aiCars) {
+                if (car.y > -carHeight - minDistance && car.y < canvas.height) {
+                    canSpawn = false;
+                    break;
+                }
             }
             
-            aiCars.push({
-                x: x,
-                y: -carHeight,
-                width: carWidth,
-                height: carHeight,
-                speed: baseCarSpeed + Math.random() * 1.5, // Speed based on difficulty (reduced range)
-                color: carColors[Math.floor(Math.random() * carColors.length)]
-            });
+            if (canSpawn) {
+                // Randomly choose from available lanes
+                const lane = availableLanes[Math.floor(Math.random() * availableLanes.length)];
+                let x;
+                
+                if (lane === 0) {
+                    x = laneWidth - carWidth / 2; // Left yellow line
+                } else if (lane === 1) {
+                    x = canvas.width / 2 - carWidth / 2; // Center yellow line
+                } else {
+                    x = canvas.width - laneWidth - carWidth / 2; // Right yellow line
+                }
+                
+                aiCars.push({
+                    x: x,
+                    y: -carHeight,
+                    width: carWidth,
+                    height: carHeight,
+                    speed: baseCarSpeed + Math.random() * 1.5, // Speed based on difficulty (reduced range)
+                    color: carColors[Math.floor(Math.random() * carColors.length)]
+                });
+            }
         }
     }
 }
