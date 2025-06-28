@@ -65,61 +65,178 @@
         <button onclick="testAddScore()">Add Test Score</button>
         <button onclick="testGetScores()">Get Top Scores</button>
         <button onclick="testConnection()">Test Connection</button>
+        <button onclick="testBasicEndpoint()">Test Basic Endpoint</button>
         
         <div id="results"></div>
     </div>
 
-    <script type="module">
-        import { supabase, leaderboardAPI } from './supabase-config.js';
+    <script>
+        // Supabase configuration
+        const SUPABASE_URL = 'https://raqpxhwbcttithpleaxr.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhcXB4aHdiY3R0aXRocGxlYXhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTEwNzE5NjksImV4cCI6MjA2NjY0Nzk2OX0.rsYWtDXe8KjN1rxwexjRzTXbsuQHJ1HRzJP8BaP9GbQ';
         
-        window.supabase = supabase;
-        window.leaderboardAPI = leaderboardAPI;
+        // Rate limiting
+        let lastSubmission = 0;
+        const minInterval = 2000; // 2 seconds
+        
+        function canSubmit() {
+            const now = Date.now();
+            if (now - lastSubmission < minInterval) {
+                return false;
+            }
+            lastSubmission = now;
+            return true;
+        }
+        
+        // Input validation
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email) && email.length <= 254;
+        }
+        
+        function isValidPlayerName(name) {
+            return name && name.trim().length > 0 && name.length <= 50;
+        }
+        
+        function isValidScore(score) {
+            return typeof score === 'number' && score >= 0 && score <= 999999;
+        }
         
         // Test connection on load
         testConnection();
         
-        window.testAddScore = async function() {
+        async function testAddScore() {
             const playerName = document.getElementById('playerName').value;
             const email = document.getElementById('playerEmail').value;
             const score = parseInt(document.getElementById('testScore').value);
             
             try {
-                const result = await leaderboardAPI.addScore(playerName, email, score);
-                if (result) {
+                // Rate limiting
+                if (!canSubmit()) {
+                    showStatus('Please wait before submitting another score', 'error');
+                    return;
+                }
+                
+                // Input validation
+                if (!isValidPlayerName(playerName)) {
+                    showStatus('Invalid player name', 'error');
+                    return;
+                }
+                
+                if (!isValidEmail(email)) {
+                    showStatus('Invalid email address', 'error');
+                    return;
+                }
+                
+                if (!isValidScore(score)) {
+                    showStatus('Invalid score', 'error');
+                    return;
+                }
+                
+                showStatus('Adding score...', 'info');
+                
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/leaderboard`, {
+                    method: 'POST',
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                        'Content-Type': 'application/json',
+                        'Prefer': 'return=representation'
+                    },
+                    body: JSON.stringify({
+                        player_name: playerName.trim().substring(0, 50),
+                        email: email.trim().toLowerCase(),
+                        score: Math.floor(score),
+                        created_at: new Date().toISOString()
+                    })
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
                     showStatus('Score added successfully!', 'success');
-                    showResults('Added score:', result);
+                    showResults('Added score:', result[0]);
                 } else {
-                    showStatus('Failed to add score', 'error');
+                    const error = await response.text();
+                    showStatus('Failed to add score: ' + response.status, 'error');
+                    showResults('Error details:', error);
                 }
             } catch (error) {
                 showStatus('Error adding score: ' + error.message, 'error');
             }
-        };
+        }
         
-        window.testGetScores = async function() {
+        async function testGetScores() {
             try {
-                const scores = await leaderboardAPI.getTopScores(5);
-                showStatus('Retrieved ' + scores.length + ' scores', 'success');
-                showResults('Top scores:', scores);
+                showStatus('Fetching scores...', 'info');
+                
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/leaderboard?select=*&order=score.desc&limit=5`, {
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const scores = await response.json();
+                    showStatus('Retrieved ' + scores.length + ' scores', 'success');
+                    showResults('Top scores:', scores);
+                } else {
+                    const error = await response.text();
+                    showStatus('Error getting scores: ' + response.status, 'error');
+                    showResults('Error details:', error);
+                }
             } catch (error) {
                 showStatus('Error getting scores: ' + error.message, 'error');
             }
-        };
+        }
         
-        window.testConnection = async function() {
+        async function testConnection() {
             try {
-                // Test basic connection
-                const { data, error } = await supabase.from('leaderboard').select('count').limit(1);
+                showStatus('Testing connection...', 'info');
                 
-                if (error) {
-                    showStatus('Connection failed: ' + error.message, 'error');
-                } else {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/leaderboard?select=count&limit=1`, {
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                    }
+                });
+                
+                if (response.ok) {
                     showStatus('✅ Supabase connection successful!', 'success');
+                } else {
+                    const error = await response.text();
+                    showStatus('Connection failed: ' + response.status, 'error');
+                    showResults('Error details:', error);
                 }
             } catch (error) {
                 showStatus('❌ Connection error: ' + error.message, 'error');
             }
-        };
+        }
+        
+        async function testBasicEndpoint() {
+            try {
+                showStatus('Testing basic endpoint...', 'info');
+                
+                // Test the root endpoint - doesn't require any table
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/`, {
+                    headers: {
+                        'apikey': SUPABASE_ANON_KEY,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                    }
+                });
+                
+                if (response.ok) {
+                    showStatus('✅ Basic Supabase endpoint working!', 'success');
+                    showResults('Endpoint response:', 'Connection successful');
+                } else {
+                    const error = await response.text();
+                    showStatus('Basic endpoint failed: ' + response.status, 'error');
+                    showResults('Error details:', error);
+                }
+            } catch (error) {
+                showStatus('❌ Basic endpoint error: ' + error.message, 'error');
+            }
+        }
         
         function showStatus(message, type) {
             const statusDiv = document.getElementById('status');
