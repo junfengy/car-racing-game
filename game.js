@@ -525,4 +525,11 @@ async function updateLeaderboardDisplay() {
         console.error('Error loading leaderboard:', error);
         leaderboardList.innerHTML = '<p>Error loading leaderboard. Please try again later.</p>';
     }
-} 
+}
+
+// Export functions to global scope for HTML onclick handlers
+window.submitEmail = submitEmail;
+window.skipEmail = skipEmail;
+window.showLeaderboard = showLeaderboard;
+window.hideLeaderboard = hideLeaderboard;
+window.restartGame = restartGame; 
