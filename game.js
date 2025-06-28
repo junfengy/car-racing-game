@@ -10,7 +10,7 @@ let gameSpeed = 2;
 let roadOffset = 0;
 let difficultyLevel = 1;
 let maxCarsOnScreen = 5;
-let baseCarSpeed = 0.7;
+let baseCarSpeed = 0.5;
 let gameStartTime = Date.now();
 let lastTimeBonus = 0;
 
@@ -49,7 +49,7 @@ function initAICars() {
         y: -carHeight,
         width: carWidth,
         height: carHeight,
-        speed: 0.7 + Math.random() * 1.0, // Speed between 0.7 and 1.7 (reduced range)
+        speed: 0.5 + Math.random() * 0.8, // Speed between 0.5 and 1.3 (slower start)
         color: carColors[Math.floor(Math.random() * carColors.length)]
     });
     
@@ -58,7 +58,7 @@ function initAICars() {
         y: -carHeight * 2,
         width: carWidth,
         height: carHeight,
-        speed: 0.7 + Math.random() * 1.0, // Speed between 0.7 and 1.7 (reduced range)
+        speed: 0.5 + Math.random() * 0.8, // Speed between 0.5 and 1.3 (slower start)
         color: carColors[Math.floor(Math.random() * carColors.length)]
     });
     
@@ -67,7 +67,7 @@ function initAICars() {
         y: -carHeight * 3,
         width: carWidth,
         height: carHeight,
-        speed: 0.7 + Math.random() * 1.0, // Speed between 0.7 and 1.7 (reduced range)
+        speed: 0.5 + Math.random() * 0.8, // Speed between 0.5 and 1.3 (slower start)
         color: carColors[Math.floor(Math.random() * carColors.length)]
     });
 }
@@ -195,7 +195,7 @@ function updateAICars() {
     if (newDifficultyLevel > difficultyLevel) {
         difficultyLevel = newDifficultyLevel;
         maxCarsOnScreen = Math.min(5 + difficultyLevel, 12); // Max 12 cars
-        baseCarSpeed = 0.7 + (difficultyLevel - 1) * 0.3; // Increase base speed
+        baseCarSpeed = 0.5 + (difficultyLevel - 1) * 0.3; // Increase base speed from 0.5
     }
     
     // Add new AI cars randomly on all lanes
@@ -293,7 +293,7 @@ function restartGame() {
     roadOffset = 0;
     difficultyLevel = 1;
     maxCarsOnScreen = 5;
-    baseCarSpeed = 0.7;
+    baseCarSpeed = 0.5;
     gameStartTime = Date.now();
     lastTimeBonus = 0;
     
