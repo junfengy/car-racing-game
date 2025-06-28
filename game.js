@@ -15,7 +15,7 @@ let gameStartTime = Date.now();
 let lastTimeBonus = 0;
 let playerEmail = localStorage.getItem('playerEmail') || '';
 let emailSubmitted = false;
-let leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
+let leaderboard = []; // Reset leaderboard to empty array
 
 // Car dimensions
 const carWidth = 40;
@@ -486,8 +486,7 @@ function updateLeaderboardDisplay() {
             <div class="leaderboard-entry">
                 <span class="rank">${medal} #${index + 1}</span>
                 <span class="player">${email}</span>
-                <span class="score">${entry.score} pts</span>
-                <span class="date">${new Date(entry.date).toLocaleDateString()}</span>
+                <span class="date">${new Date(entry.date).toLocaleDateString()} - ${entry.score} pts</span>
             </div>
         `;
     });
