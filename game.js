@@ -200,25 +200,46 @@ function updateAICars() {
     
     // Add new AI cars randomly on all lanes
     if (Math.random() < (0.02 + difficultyLevel * 0.005) && aiCars.length < maxCarsOnScreen) { // Spawn if less than max cars on screen
-        const lane = Math.floor(Math.random() * 3); // 0 = left, 1 = middle, 2 = right
-        let x;
-        
-        if (lane === 0) {
-            x = laneWidth - carWidth / 2; // Left yellow line
-        } else if (lane === 1) {
-            x = canvas.width / 2 - carWidth / 2; // Center yellow line
-        } else {
-            x = canvas.width - laneWidth - carWidth / 2; // Right yellow line
+        // Check which lanes currently have cars
+        const lanesWithCars = new Set();
+        for (const car of aiCars) {
+            if (car.y < canvas.height && car.y > -carHeight) { // Only consider cars on screen
+                if (Math.abs(car.x - (laneWidth - carWidth / 2)) < 10) {
+                    lanesWithCars.add(0); // Left lane
+                } else if (Math.abs(car.x - (canvas.width / 2 - carWidth / 2)) < 10) {
+                    lanesWithCars.add(1); // Middle lane
+                } else if (Math.abs(car.x - (canvas.width - laneWidth - carWidth / 2)) < 10) {
+                    lanesWithCars.add(2); // Right lane
+                }
+            }
         }
         
-        aiCars.push({
-            x: x,
-            y: -carHeight,
-            width: carWidth,
-            height: carHeight,
-            speed: baseCarSpeed + Math.random() * 1.5, // Speed based on difficulty (reduced range)
-            color: carColors[Math.floor(Math.random() * carColors.length)]
-        });
+        // Only spawn if there's at least one safe lane
+        if (lanesWithCars.size < 3) {
+            // Find available lanes (lanes without cars)
+            const availableLanes = [0, 1, 2].filter(lane => !lanesWithCars.has(lane));
+            
+            // Randomly choose from available lanes
+            const lane = availableLanes[Math.floor(Math.random() * availableLanes.length)];
+            let x;
+            
+            if (lane === 0) {
+                x = laneWidth - carWidth / 2; // Left yellow line
+            } else if (lane === 1) {
+                x = canvas.width / 2 - carWidth / 2; // Center yellow line
+            } else {
+                x = canvas.width - laneWidth - carWidth / 2; // Right yellow line
+            }
+            
+            aiCars.push({
+                x: x,
+                y: -carHeight,
+                width: carWidth,
+                height: carHeight,
+                speed: baseCarSpeed + Math.random() * 1.5, // Speed based on difficulty (reduced range)
+                color: carColors[Math.floor(Math.random() * carColors.length)]
+            });
+        }
     }
 }
 
