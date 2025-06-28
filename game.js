@@ -291,7 +291,20 @@ async function gameOver() {
     
     // Add score to leaderboard using Supabase
     if (playerEmail) {
-        await leaderboardAPI.addScore(playerEmail.split('@')[0], playerEmail, score);
+        try {
+            await leaderboardAPI.addScore(playerEmail.split('@')[0], playerEmail, score);
+            console.log('Score submitted to leaderboard successfully');
+        } catch (error) {
+            console.error('Failed to submit score:', error.message);
+            // Show user-friendly error message
+            if (error.message.includes('wait before submitting')) {
+                alert('Score submission rate limited. Please wait a moment before trying again.');
+            } else if (error.message.includes('Invalid')) {
+                alert('Score submission failed due to invalid data. Please try again.');
+            } else {
+                alert('Failed to submit score to leaderboard. Your local high score has been saved.');
+            }
+        }
     }
     
     // Check for new high score
