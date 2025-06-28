@@ -13,6 +13,8 @@ let maxCarsOnScreen = 5;
 let baseCarSpeed = 0.5;
 let gameStartTime = Date.now();
 let lastTimeBonus = 0;
+let playerEmail = localStorage.getItem('playerEmail') || '';
+let emailSubmitted = false;
 
 // Car dimensions
 const carWidth = 40;
@@ -288,6 +290,12 @@ function gameOver() {
     if (isNewHighScore) {
         highScore = score;
         localStorage.setItem('carRacingHighScore', highScore);
+        
+        // Collect email for high score if not already provided
+        if (!playerEmail) {
+            showEmailForm();
+            return; // Don't show game over screen yet
+        }
     }
     
     document.getElementById('gameOver').style.display = 'block';
@@ -351,6 +359,45 @@ function checkTimeBonus() {
     }
 }
 
+// Email collection functions
+function submitEmail() {
+    const email = document.getElementById('playerEmail').value;
+    if (email && isValidEmail(email)) {
+        playerEmail = email;
+        localStorage.setItem('playerEmail', email);
+        emailSubmitted = true;
+        hideEmailForm();
+        startGame();
+    } else {
+        alert('Please enter a valid email address!');
+    }
+}
+
+function skipEmail() {
+    emailSubmitted = true;
+    hideEmailForm();
+    startGame();
+}
+
+function hideEmailForm() {
+    document.getElementById('emailForm').style.display = 'none';
+}
+
+function showEmailForm() {
+    document.getElementById('emailForm').style.display = 'block';
+}
+
+function isValidEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+}
+
+function startGame() {
+    gameRunning = true;
+    initAICars();
+    gameLoop();
+}
+
 // Main game loop
 function gameLoop() {
     if (!gameRunning) return;
@@ -402,5 +449,9 @@ document.addEventListener('keyup', (e) => {
 });
 
 // Initialize and start the game
-initAICars();
-gameLoop(); 
+if (!playerEmail) {
+    showEmailForm();
+} else {
+    emailSubmitted = true;
+    startGame();
+} 
