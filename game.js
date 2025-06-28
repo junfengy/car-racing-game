@@ -10,7 +10,7 @@ let gameSpeed = 2;
 let roadOffset = 0;
 let difficultyLevel = 1;
 let maxCarsOnScreen = 5;
-let baseCarSpeed = 1.0;
+let baseCarSpeed = 0.7;
 let gameStartTime = Date.now();
 let lastTimeBonus = 0;
 
@@ -26,9 +26,9 @@ const playerCar = {
     width: carWidth,
     height: carHeight,
     speed: 0,
-    maxSpeed: 5,
-    acceleration: 0.2,
-    deceleration: 0.1,
+    maxSpeed: 3,
+    acceleration: 0.1,
+    deceleration: 0.05,
     isStopped: false,
     lane: 1, // 0 = left, 1 = middle, 2 = right
     targetX: canvas.width / 2 - carWidth / 2
@@ -49,7 +49,7 @@ function initAICars() {
         y: -carHeight,
         width: carWidth,
         height: carHeight,
-        speed: 1.0 + Math.random() * 1.5, // Speed between 1.0 and 2.5 (reduced range)
+        speed: 0.7 + Math.random() * 1.0, // Speed between 0.7 and 1.7 (reduced range)
         color: carColors[Math.floor(Math.random() * carColors.length)]
     });
     
@@ -58,7 +58,7 @@ function initAICars() {
         y: -carHeight * 2,
         width: carWidth,
         height: carHeight,
-        speed: 1.0 + Math.random() * 1.5, // Speed between 1.0 and 2.5 (reduced range)
+        speed: 0.7 + Math.random() * 1.0, // Speed between 0.7 and 1.7 (reduced range)
         color: carColors[Math.floor(Math.random() * carColors.length)]
     });
     
@@ -67,7 +67,7 @@ function initAICars() {
         y: -carHeight * 3,
         width: carWidth,
         height: carHeight,
-        speed: 1.0 + Math.random() * 1.5, // Speed between 1.0 and 2.5 (reduced range)
+        speed: 0.7 + Math.random() * 1.0, // Speed between 0.7 and 1.7 (reduced range)
         color: carColors[Math.floor(Math.random() * carColors.length)]
     });
 }
@@ -195,7 +195,7 @@ function updateAICars() {
     if (newDifficultyLevel > difficultyLevel) {
         difficultyLevel = newDifficultyLevel;
         maxCarsOnScreen = Math.min(5 + difficultyLevel, 12); // Max 12 cars
-        baseCarSpeed = 1.0 + (difficultyLevel - 1) * 0.3; // Increase base speed
+        baseCarSpeed = 0.7 + (difficultyLevel - 1) * 0.3; // Increase base speed
     }
     
     // Add new AI cars randomly on all lanes
@@ -293,7 +293,7 @@ function restartGame() {
     roadOffset = 0;
     difficultyLevel = 1;
     maxCarsOnScreen = 5;
-    baseCarSpeed = 1.0;
+    baseCarSpeed = 0.7;
     gameStartTime = Date.now();
     lastTimeBonus = 0;
     
