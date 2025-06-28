@@ -481,7 +481,7 @@ function updateLeaderboardDisplay() {
     let html = '<div class="leaderboard-entries">';
     leaderboard.forEach((entry, index) => {
         const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '🏅';
-        const email = entry.email ? entry.email.split('@')[0] + '@***' : 'Anonymous';
+        const email = entry.email ? entry.email.split('@')[0] + '@***' : 'Guest';
         html += `
             <div class="leaderboard-entry">
                 <span class="rank">${medal} #${index + 1}</span>
