@@ -495,15 +495,32 @@ function updateLeaderboardDisplay() {
 }
 
 function addToLeaderboard(score, email) {
-    const entry = {
-        score: score,
-        email: email,
-        date: Date.now()
-    };
+    // Check if this email already has a score in the leaderboard
+    const existingIndex = leaderboard.findIndex(entry => entry.email === email);
     
-    leaderboard.push(entry);
-    leaderboard.sort((a, b) => b.score - a.score); // Sort by score descending
-    leaderboard = leaderboard.slice(0, 10); // Keep only top 10
+    if (existingIndex !== -1) {
+        // If this score is higher than the existing one, replace it
+        if (score > leaderboard[existingIndex].score) {
+            leaderboard[existingIndex] = {
+                score: score,
+                email: email,
+                date: Date.now()
+            };
+        }
+        // If this score is lower or equal, don't add it
+    } else {
+        // New email, add the entry
+        const entry = {
+            score: score,
+            email: email,
+            date: Date.now()
+        };
+        leaderboard.push(entry);
+    }
+    
+    // Sort by score descending and keep only top 10
+    leaderboard.sort((a, b) => b.score - a.score);
+    leaderboard = leaderboard.slice(0, 10);
     
     localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
 } 
