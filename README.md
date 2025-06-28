@@ -1,6 +1,6 @@
 # 🏎️ Car Racing Game
 
-A fun browser-based car racing game where you control a car in the middle lane and avoid crashing into AI-controlled cars in the side lanes.
+A fun browser-based car racing game where you control a car in the middle lane and avoid crashing into AI-controlled cars in the side lanes. Features a shared leaderboard powered by Supabase!
 
 ## 🎮 How to Play
 
@@ -20,35 +20,53 @@ A fun browser-based car racing game where you control a car in the middle lane a
 - **AI opponents**: Computer-controlled cars in all lanes
 - **Collision detection**: Game resets when you crash
 - **Score tracking**: Earn points for survival and car passing
+- **Shared leaderboard**: Global leaderboard powered by Supabase
 - **High score system**: Persistent high scores using localStorage
 - **Progressive difficulty**: Game gets harder every 100 points
 - **Time-based scoring**: +50 points every 10 seconds of survival
 - **Smooth animations**: 60fps gameplay with requestAnimationFrame
 - **Responsive design**: Works on different screen sizes
+- **Email collection**: Optional email collection for leaderboard entries
 
 ## 🚀 How to Run
 
 ### Local Development
 1. Download or clone this repository
-2. Open `index.html` in any modern web browser
-3. Start playing immediately!
+2. **Set up Supabase** (see [SUPABASE_SETUP.md](SUPABASE_SETUP.md) for detailed instructions):
+   - Create a Supabase account at [supabase.com](https://supabase.com)
+   - Create a new project and database table
+   - Update `supabase-config.js` with your credentials
+3. Start a local server: `python3 -m http.server 8000`
+4. Open `http://localhost:8000` in your browser
+5. Test the connection with `http://localhost:8000/test-supabase.html`
 
 ### GitHub Pages Deployment
-1. Push this repository to GitHub
-2. Go to your repository Settings
-3. Scroll down to "GitHub Pages" section
-4. Select "Deploy from a branch"
-5. Choose "main" branch and "/ (root)" folder
-6. Click "Save"
-7. Your game will be available at: `https://yourusername.github.io/repository-name`
+1. Set up Supabase as described above
+2. Push this repository to GitHub
+3. Go to your repository Settings
+4. Scroll down to "GitHub Pages" section
+5. Select "Deploy from a branch"
+6. Choose "main" branch and "/ (root)" folder
+7. Click "Save"
+8. Your game will be available at: `https://yourusername.github.io/repository-name`
 
 ## 🛠️ Technical Details
 
 - **HTML5 Canvas**: For smooth 2D graphics rendering
 - **Vanilla JavaScript**: No external dependencies required
 - **CSS3**: Modern styling with gradients and animations
+- **Supabase**: Real-time database for shared leaderboard
+- **ES6 Modules**: Modern JavaScript module system
 - **localStorage**: Persistent high score storage
 - **Responsive design**: Works on desktop and mobile devices
+
+## 🏆 Leaderboard System
+
+- **Global leaderboard**: Scores shared across all players worldwide
+- **Real-time updates**: Leaderboard updates immediately when new scores are added
+- **Email privacy**: Email addresses are partially masked in the display
+- **Top 10 scores**: Only the best scores are shown
+- **Player names**: Uses email prefix as player name
 
 ## 🎨 Game Mechanics
 
@@ -66,6 +84,7 @@ A fun browser-based car racing game where you control a car in the middle lane a
 - **Survival Time**: +50 points every 10 seconds
 - **High Score**: Persistent across browser sessions
 - **Level Progression**: Every 100 points increases difficulty
+- **Global Ranking**: Compare your score with players worldwide
 
 ## 🏆 Tips for High Scores
 
@@ -82,6 +101,16 @@ A fun browser-based car racing game where you control a car in the middle lane a
 - Safari
 - Edge
 - Mobile browsers (touch controls may vary)
+
+## 🔧 Supabase Setup
+
+For detailed instructions on setting up Supabase for the shared leaderboard, see [SUPABASE_SETUP.md](SUPABASE_SETUP.md).
+
+Quick setup:
+1. Create Supabase account and project
+2. Create `leaderboard` table with columns: `id`, `player_name`, `email`, `score`, `created_at`
+3. Update `supabase-config.js` with your URL and anon key
+4. Test connection with `test-supabase.html`
 
 ## 🤝 Contributing
 

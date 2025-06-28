@@ -1,3 +1,6 @@
+// Import Supabase leaderboard API
+import { leaderboardAPI } from './supabase-config.js';
+
 // Game canvas and context
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -15,7 +18,7 @@ let gameStartTime = Date.now();
 let lastTimeBonus = 0;
 let playerEmail = localStorage.getItem('playerEmail') || '';
 let emailSubmitted = false;
-let leaderboard = []; // Reset leaderboard to empty array
+let leaderboard = [];
 
 // Car dimensions
 const carWidth = 40;
@@ -283,11 +286,13 @@ function checkCollisions() {
 }
 
 // Game over function
-function gameOver() {
+async function gameOver() {
     gameRunning = false;
     
-    // Add score to leaderboard
-    addToLeaderboard(score, playerEmail);
+    // Add score to leaderboard using Supabase
+    if (playerEmail) {
+        await leaderboardAPI.addScore(playerEmail.split('@')[0], playerEmail, score);
+    }
     
     // Check for new high score
     const isNewHighScore = score > highScore;
@@ -464,8 +469,8 @@ if (!playerEmail) {
 }
 
 // Leaderboard functions
-function showLeaderboard() {
-    updateLeaderboardDisplay();
+async function showLeaderboard() {
+    await updateLeaderboardDisplay();
     document.getElementById('leaderboardModal').style.display = 'block';
 }
 
@@ -473,57 +478,38 @@ function hideLeaderboard() {
     document.getElementById('leaderboardModal').style.display = 'none';
 }
 
-function updateLeaderboardDisplay() {
+async function updateLeaderboardDisplay() {
     const leaderboardList = document.getElementById('leaderboardList');
     
-    if (leaderboard.length === 0) {
-        leaderboardList.innerHTML = '<p>No scores yet. Be the first to set a record!</p>';
-        return;
-    }
-    
-    let html = '<div class="leaderboard-entries">';
-    leaderboard.forEach((entry, index) => {
-        const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '🏅';
-        const email = entry.email ? entry.email.split('@')[0] + '@***' : 'Guest';
-        html += `
-            <div class="leaderboard-entry">
-                <span class="rank">${medal} #${index + 1}</span>
-                <span class="player">${email}</span>
-                <span class="date">${new Date(entry.date).toLocaleDateString()} - ${entry.score} pts</span>
-            </div>
-        `;
-    });
-    html += '</div>';
-    leaderboardList.innerHTML = html;
-}
-
-function addToLeaderboard(score, email) {
-    // Check if this email already has a score in the leaderboard
-    const existingIndex = leaderboard.findIndex(entry => entry.email === email);
-    
-    if (existingIndex !== -1) {
-        // If this score is higher than the existing one, replace it
-        if (score > leaderboard[existingIndex].score) {
-            leaderboard[existingIndex] = {
-                score: score,
-                email: email,
-                date: Date.now()
-            };
+    try {
+        // Show loading state
+        leaderboardList.innerHTML = '<p>Loading leaderboard...</p>';
+        
+        // Fetch leaderboard from Supabase
+        const topScores = await leaderboardAPI.getTopScores(10);
+        
+        if (topScores.length === 0) {
+            leaderboardList.innerHTML = '<p>No scores yet. Be the first to set a record!</p>';
+            return;
         }
-        // If this score is lower or equal, don't add it
-    } else {
-        // New email, add the entry
-        const entry = {
-            score: score,
-            email: email,
-            date: Date.now()
-        };
-        leaderboard.push(entry);
+        
+        let html = '<div class="leaderboard-entries">';
+        topScores.forEach((entry, index) => {
+            const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '🏅';
+            const playerName = entry.player_name || entry.email.split('@')[0] + '@***';
+            const date = new Date(entry.created_at).toLocaleDateString();
+            html += `
+                <div class="leaderboard-entry">
+                    <span class="rank">${medal} #${index + 1}</span>
+                    <span class="player">${playerName}</span>
+                    <span class="date">${date} - ${entry.score} pts</span>
+                </div>
+            `;
+        });
+        html += '</div>';
+        leaderboardList.innerHTML = html;
+    } catch (error) {
+        console.error('Error loading leaderboard:', error);
+        leaderboardList.innerHTML = '<p>Error loading leaderboard. Please try again later.</p>';
     }
-    
-    // Sort by score descending and keep only top 10
-    leaderboard.sort((a, b) => b.score - a.score);
-    leaderboard = leaderboard.slice(0, 10);
-    
-    localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
 } 
