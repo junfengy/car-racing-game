@@ -453,9 +453,12 @@ document.addEventListener('keyup', (e) => {
 });
 
 // Initialize and start the game
+console.log('Stored email:', playerEmail); // Debug log
 if (!playerEmail) {
+    console.log('No email found, showing form'); // Debug log
     showEmailForm();
 } else {
+    console.log('Email found, starting game directly'); // Debug log
     emailSubmitted = true;
     startGame();
 }
