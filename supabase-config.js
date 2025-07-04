@@ -45,6 +45,7 @@ export const leaderboardAPI = {
             // Validate limit
             const safeLimit = Math.min(Math.max(1, limit), 50); // Max 50 scores
             
+            // Get the top scores ordered by score (highest first)
             const { data, error } = await supabase
                 .from('leaderboard')
                 .select('*')
@@ -84,27 +85,20 @@ export const leaderboardAPI = {
             const sanitizedName = playerName.trim().substring(0, 50);
             const sanitizedEmail = email.trim().toLowerCase();
             
-            // Use upsert to only keep the highest score for each email
+            // Simply insert the new score (no upsert since anon key typically only allows INSERT)
             const { data, error } = await supabase
                 .from('leaderboard')
-                .upsert([
+                .insert([
                     {
                         player_name: sanitizedName,
                         email: sanitizedEmail,
                         score: Math.floor(score),
                         created_at: new Date().toISOString()
                     }
-                ], {
-                    onConflict: 'email', // Conflict on email column
-                    ignoreDuplicates: false // Update if exists
-                })
+                ])
                 .select()
             
             if (error) {
-                // Handle specific Supabase errors
-                if (error.code === '23505') { // Unique constraint violation
-                    throw new Error('Score already submitted');
-                }
                 throw error;
             }
             

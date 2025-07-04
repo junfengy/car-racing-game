@@ -8,7 +8,7 @@ const ctx = canvas.getContext('2d');
 // Game state
 let gameRunning = true;
 let score = 0;
-let highScore = localStorage.getItem('carRacingHighScore') || 0;
+let highScore = 0; // Will be fetched from Supabase
 let gameSpeed = 2;
 let roadOffset = 0;
 let difficultyLevel = 1;
@@ -289,11 +289,24 @@ function checkCollisions() {
 async function gameOver() {
     gameRunning = false;
     
+    // Check if player has email before submitting score
+    if (!playerEmail) {
+        // Check if this might be a high score
+        const isPotentialHighScore = score >= highScore;
+        if (isPotentialHighScore) {
+            showEmailForm();
+            return; // Don't show game over screen yet
+        }
+    }
+    
     // Add score to leaderboard using Supabase
     if (playerEmail) {
         try {
             await leaderboardAPI.addScore(playerEmail.split('@')[0], playerEmail, score);
             console.log('Score submitted to leaderboard successfully');
+            
+            // Refresh the highest score from Supabase after submitting
+            await fetchHighestScore();
         } catch (error) {
             console.error('Failed to submit score:', error.message);
             // Show user-friendly error message
@@ -307,18 +320,8 @@ async function gameOver() {
         }
     }
     
-    // Check for new high score
-    const isNewHighScore = score > highScore;
-    if (isNewHighScore) {
-        highScore = score;
-        localStorage.setItem('carRacingHighScore', highScore);
-        
-        // Collect email for high score if not already provided
-        if (!playerEmail) {
-            showEmailForm();
-            return; // Don't show game over screen yet
-        }
-    }
+    // Check for new high score after fetching updated high score
+    const isNewHighScore = score >= highScore;
     
     document.getElementById('gameOver').style.display = 'block';
     document.getElementById('finalScore').textContent = score;
@@ -359,6 +362,9 @@ function restartGame() {
     // Hide game over screen
     document.getElementById('gameOver').style.display = 'none';
     
+    // Refresh the highest score from Supabase
+    fetchHighestScore();
+    
     // Restart the game loop
     gameLoop();
 }
@@ -389,7 +395,9 @@ function submitEmail() {
         localStorage.setItem('playerEmail', email);
         emailSubmitted = true;
         hideEmailForm();
-        startGame();
+        fetchHighestScore().then(() => {
+            startGame();
+        });
     } else {
         alert('Please enter a valid email address!');
     }
@@ -398,7 +406,9 @@ function submitEmail() {
 function skipEmail() {
     emailSubmitted = true;
     hideEmailForm();
-    startGame();
+    fetchHighestScore().then(() => {
+        startGame();
+    });
 }
 
 function hideEmailForm() {
@@ -472,14 +482,18 @@ document.addEventListener('keyup', (e) => {
 
 // Initialize and start the game
 console.log('Stored email:', playerEmail); // Debug log
-if (!playerEmail) {
-    console.log('No email found, showing form'); // Debug log
-    showEmailForm();
-} else {
-    console.log('Email found, starting game directly'); // Debug log
-    emailSubmitted = true;
-    startGame();
-}
+
+// Fetch the highest score from Supabase when the game loads
+fetchHighestScore().then(() => {
+    if (!playerEmail) {
+        console.log('No email found, showing form'); // Debug log
+        showEmailForm();
+    } else {
+        console.log('Email found, starting game directly'); // Debug log
+        emailSubmitted = true;
+        startGame();
+    }
+});
 
 // Leaderboard functions
 async function showLeaderboard() {
@@ -532,4 +546,26 @@ window.submitEmail = submitEmail;
 window.skipEmail = skipEmail;
 window.showLeaderboard = showLeaderboard;
 window.hideLeaderboard = hideLeaderboard;
-window.restartGame = restartGame; 
+window.restartGame = restartGame;
+
+// Function to fetch the highest score from Supabase
+async function fetchHighestScore() {
+    try {
+        // Reset highScore to 0 first to ensure we get fresh data
+        highScore = 0;
+        
+        const scores = await leaderboardAPI.getTopScores(1);
+        if (scores.length > 0) {
+            highScore = scores[0].score;
+            console.log('Fetched highest score from Supabase:', highScore);
+        } else {
+            highScore = 0;
+            console.log('No scores found in Supabase, using 0 as high score');
+        }
+        updateScore(); // Update the display
+    } catch (error) {
+        console.error('Error fetching highest score:', error);
+        // If Supabase fails, keep the current highScore value
+        updateScore();
+    }
+} 
